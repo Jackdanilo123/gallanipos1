@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallani Hotel POS — Monie Point Tom Bar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;600&family=Josefin+Sans:wght@200;300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --gold:#C9A84C; --gold-light:#E8D08A; --gold-dim:#8B6914;
+  --black:#0A0A0A; --dark:#111111; --card:#1A1710; --card2:#201C15;
+  --border:rgba(201,168,76,0.2); --border-active:rgba(201,168,76,0.6);
+  --text:#F5EDD8; --muted:#9A8F78; --green:#4CAF7A; --red:#E05555; --sidebar:#13110D;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:'Josefin Sans',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--black);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.login-logo{font-family:'Playfair Display',serif;font-size:38px;color:var(--text);text-align:center;margin-bottom:4px;}
+.login-logo span{color:var(--gold);font-style:italic;}
+.login-sub{font-size:10px;letter-spacing:5px;color:var(--muted);text-transform:uppercase;margin-bottom:36px;}
+.login-box{background:var(--card);border:1px solid var(--border-active);padding:32px 36px;width:380px;}
+.login-title{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;text-align:center;}
+.login-staff-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.staff-btn{background:var(--card2);border:1px solid var(--border);padding:12px 10px;cursor:pointer;transition:all .2s;text-align:center;}
+.staff-btn:hover{border-color:var(--gold-dim);}
+.staff-btn.selected{border-color:var(--gold);background:rgba(201,168,76,0.12);}
+.staff-name{font-size:12px;letter-spacing:1px;color:var(--text);text-transform:uppercase;}
+.staff-role{font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:2px;}
+.login-pin-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.login-pin-row{display:flex;gap:8px;margin-bottom:14px;}
+.pin-dot{flex:1;height:40px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--gold);}
+.login-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
+.numpad-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);font-family:'Josefin Sans',sans-serif;font-size:16px;padding:11px;cursor:pointer;transition:all .2s;}
+.numpad-btn:hover{border-color:var(--gold-dim);background:rgba(201,168,76,0.08);}
+.numpad-btn:active{transform:scale(.95);}
+.btn-login-go{width:100%;padding:13px;background:var(--gold);border:none;color:var(--black);font-family:'Josefin Sans',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:all .2s;}
+.btn-login-go:hover{background:var(--gold-light);}
+.login-err{color:var(--red);font-size:10px;letter-spacing:2px;text-align:center;margin-top:8px;min-height:16px;}
+
+/* TOPBAR */
+.topbar{background:var(--sidebar);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-logo{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);}
+.topbar-logo span{color:var(--gold);font-style:italic;}
+.topbar-sub{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;border-left:1px solid var(--border);padding-left:12px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.topbar-time{font-size:11px;color:var(--muted);letter-spacing:2px;}
+.cashier-badge{display:flex;align-items:center;gap:5px;background:rgba(201,168,76,0.08);border:1px solid var(--gold-dim);padding:4px 10px;font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;}
+.btn-topbar{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2px;padding:5px 12px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-topbar:hover{background:rgba(201,168,76,0.1);border-color:var(--gold);}
+.btn-topbar.red{border-color:rgba(224,85,85,.4);color:var(--red);}
+.btn-topbar.red:hover{background:rgba(224,85,85,.1);}
+.held-badge{background:rgba(201,168,76,0.15);border:1px solid var(--gold-dim);color:var(--gold);font-size:10px;letter-spacing:1px;padding:4px 10px;cursor:pointer;transition:all .2s;}
+.held-badge:hover{background:rgba(201,168,76,0.25);}
+
+/* LAYOUT */
+.pos-layout{display:grid;grid-template-columns:1fr 340px;flex:1;overflow:hidden;}
+.menu-panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.cat-tabs{display:flex;gap:4px;padding:10px 14px;background:var(--sidebar);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.cat-tabs::-webkit-scrollbar{display:none;}
+.cat-tab{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2px;padding:6px 14px;cursor:pointer;white-space:nowrap;transition:all .2s;text-transform:uppercase;}
+.cat-tab:hover{color:var(--text);border-color:var(--gold-dim);}
+.cat-tab.active{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold);}
+.search-bar{padding:9px 14px;background:var(--sidebar);border-bottom:1px solid var(--border);flex-shrink:0;}
+.search-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'Josefin Sans',sans-serif;font-size:12px;letter-spacing:1px;padding:7px 12px;outline:none;transition:border .2s;}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{border-color:var(--gold-dim);}
+.items-panel{flex:1;overflow-y:auto;padding:12px 14px;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent;}
+.items-panel::-webkit-scrollbar{width:4px;}
+.items-panel::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px;}
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px;}
+.item-btn{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:14px 12px;cursor:pointer;transition:all .2s;text-align:left;position:relative;overflow:hidden;}
+.item-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .2s;}
+.item-btn:hover{background:var(--card2);border-color:var(--gold-dim);transform:translateY(-1px);}
+.item-btn:hover::after{transform:scaleX(1);}
+.item-btn:active{transform:scale(.97);}
+.item-btn.featured{border-color:rgba(201,168,76,0.35);}
+.btn-category{font-size:9px;letter-spacing:2px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:4px;}
+.btn-name{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.5px;line-height:1.2;margin-bottom:7px;}
+.item-btn.featured .btn-name{color:var(--gold-light);}
+.btn-price{font-size:12px;color:var(--gold);letter-spacing:1px;}
+.btn-badge{position:absolute;top:7px;right:7px;background:rgba(201,168,76,0.2);border:1px solid var(--gold-dim);color:var(--gold);font-size:8px;letter-spacing:1px;padding:2px 5px;text-transform:uppercase;}
+.section-label{grid-column:1/-1;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold-dim);padding:10px 0 4px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+
+/* ORDER PANEL */
+.order-panel{background:var(--sidebar);display:flex;flex-direction:column;overflow:hidden;}
+.order-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.order-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.order-num{font-size:11px;letter-spacing:2px;color:var(--gold);}
+.order-meta{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;}
+.meta-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;padding:6px 9px;outline:none;transition:border .2s;}
+.meta-input::placeholder{color:var(--muted);font-size:10px;}
+.meta-input:focus{border-color:var(--gold-dim);}
+.order-items{flex:1;overflow-y:auto;padding:8px 16px;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent;}
+.order-items::-webkit-scrollbar{width:3px;}
+.order-items::-webkit-scrollbar-thumb{background:var(--gold-dim);}
+.empty-order{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:10px;}
+.empty-icon{font-size:34px;opacity:.3;}
+.empty-text{font-size:10px;letter-spacing:3px;text-transform:uppercase;}
+.order-item{display:flex;align-items:flex-start;gap:7px;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.1);animation:slideIn .2s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+.oi-info{flex:1;}
+.oi-name{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.oi-note{font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.oi-controls{display:flex;align-items:center;gap:5px;}
+.qty-btn{width:20px;height:20px;background:var(--card);border:1px solid var(--border);color:var(--gold);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;}
+.qty-btn:hover{background:var(--card2);border-color:var(--gold);}
+.qty-val{font-size:12px;min-width:18px;text-align:center;color:var(--text);}
+.oi-price{font-size:11px;color:var(--gold-light);letter-spacing:1px;min-width:58px;text-align:right;}
+.oi-actions{display:flex;gap:4px;align-items:center;}
+.oi-edit{background:none;border:1px solid rgba(201,168,76,0.3);color:var(--gold-dim);cursor:pointer;font-size:9px;letter-spacing:1px;padding:2px 7px;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;transition:all .15s;}
+.oi-edit:hover{border-color:var(--gold);color:var(--gold);}
+.oi-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;opacity:.45;transition:opacity .15s;padding:0 2px;}
+.oi-remove:hover{opacity:1;}
+.order-totals{padding:10px 16px;border-top:1px solid var(--border);flex-shrink:0;background:var(--card);}
+.total-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;}
+.total-row.grand{font-size:15px;color:var(--gold);font-family:'Cormorant Garamond',serif;font-weight:600;margin-top:7px;padding-top:7px;border-top:1px solid var(--border);margin-bottom:0;}
+.total-row.grand span:last-child{font-family:'Josefin Sans',sans-serif;font-size:13px;}
+.order-actions{padding:10px 16px;display:flex;flex-direction:column;gap:7px;flex-shrink:0;border-top:1px solid var(--border);}
+.action-row{display:flex;gap:7px;}
+.btn-action{flex:1;padding:9px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid;cursor:pointer;transition:all .2s;}
+.btn-clear{background:transparent;border-color:rgba(224,85,85,0.4);color:var(--red);}
+.btn-clear:hover{background:rgba(224,85,85,0.1);}
+.btn-hold{background:transparent;border-color:var(--gold-dim);color:var(--muted);}
+.btn-hold:hover{background:rgba(201,168,76,0.08);color:var(--gold);}
+.btn-new{background:transparent;border-color:rgba(76,175,122,.5);color:var(--green);}
+.btn-new:hover{background:rgba(76,175,122,.1);}
+.btn-print{background:var(--gold);border-color:var(--gold);color:var(--black);font-weight:600;letter-spacing:3px;}
+.btn-print:hover{background:var(--gold-light);}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border-active);padding:28px 30px;max-width:460px;width:92%;animation:popIn .25s ease;position:relative;}
+@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-family:'Playfair Display',serif;font-size:19px;color:var(--gold);margin-bottom:18px;letter-spacing:1px;}
+.modal-btn-row{display:flex;gap:9px;margin-top:16px;}
+.mbtn{flex:1;padding:11px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;border:1px solid;cursor:pointer;transition:all .2s;}
+.mbtn-cancel{background:transparent;border-color:var(--border);color:var(--muted);}
+.mbtn-cancel:hover{color:var(--text);}
+.mbtn-confirm{background:var(--gold);border-color:var(--gold);color:var(--black);font-weight:600;}
+.mbtn-confirm:hover{background:var(--gold-light);}
+.mbtn-danger{background:transparent;border-color:rgba(224,85,85,.5);color:var(--red);}
+.mbtn-danger:hover{background:rgba(224,85,85,.1);}
+
+/* PAYMENT */
+.pay-methods{display:flex;gap:8px;margin:10px 0 14px;}
+.pay-btn{flex:1;padding:10px;background:var(--card);border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.pay-btn.active{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold);}
+.cash-section{margin:10px 0;}
+.cash-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.cash-input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);font-family:'Josefin Sans',sans-serif;font-size:18px;letter-spacing:1px;padding:10px 12px;outline:none;transition:border .2s;}
+.cash-input:focus{border-color:var(--gold);}
+.change-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);}
+.change-label{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.change-val{font-size:18px;color:var(--green);font-weight:600;font-family:'Cormorant Garamond',serif;}
+.change-val.negative{color:var(--red);}
+
+/* RECEIPT */
+.receipt{background:#fff;color:#111;font-family:'Courier New',monospace;font-size:12px;padding:22px 18px;max-width:320px;margin:0 auto;}
+.receipt-hotel{text-align:center;font-weight:700;font-size:14px;margin-bottom:2px;}
+.receipt-sub{text-align:center;font-size:11px;margin-bottom:2px;}
+.receipt-phone{text-align:center;font-size:10px;color:#555;margin-bottom:10px;}
+.receipt-divider{border:none;border-top:1px dashed #999;margin:7px 0;}
+.receipt-meta{display:flex;justify-content:space-between;font-size:10px;color:#555;margin-bottom:6px;}
+.receipt-item{display:flex;justify-content:space-between;margin:3px 0;font-size:11px;}
+.receipt-item-name{flex:1;}
+.receipt-item-qty{width:30px;text-align:center;}
+.receipt-item-price{width:70px;text-align:right;}
+.receipt-total-row{display:flex;justify-content:space-between;font-size:11px;margin-top:2px;}
+.receipt-grand{font-weight:700;font-size:14px;}
+.receipt-thanks{text-align:center;font-size:10px;color:#555;margin-top:10px;}
+.receipt-qr{text-align:center;margin-top:10px;}
+.receipt-qr-label{font-size:9px;color:#888;margin-bottom:5px;}
+
+/* QR */
+.qr-modal{text-align:center;}
+#qr-container{display:flex;justify-content:center;margin:14px 0;}
+#qr-container canvas,#qr-container img{border:8px solid white;border-radius:4px;}
+.qr-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.qr-url{font-size:11px;color:var(--gold);margin-top:6px;letter-spacing:1px;word-break:break-all;}
+
+/* HELD ORDERS */
+.held-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
+.held-item{background:var(--card2);border:1px solid var(--border);padding:11px 13px;display:flex;justify-content:space-between;align-items:center;}
+.held-item-info{display:flex;flex-direction:column;gap:3px;}
+.held-item-num{font-size:12px;color:var(--gold);letter-spacing:2px;}
+.held-item-meta{font-size:10px;color:var(--muted);letter-spacing:1px;}
+.held-item-actions{display:flex;gap:5px;}
+.held-action{background:none;border:1px solid var(--border);color:var(--muted);font-size:9px;letter-spacing:1px;padding:4px 8px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;transition:all .2s;}
+.held-action:hover{border-color:var(--gold-dim);color:var(--gold);}
+.held-action.del:hover{border-color:var(--red);color:var(--red);}
+.held-empty{text-align:center;padding:28px;color:var(--muted);font-size:10px;letter-spacing:3px;text-transform:uppercase;}
+
+/* EDIT ITEM */
+.edit-item-name{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold-light);letter-spacing:1px;margin-bottom:16px;text-transform:uppercase;}
+.edit-row{display:flex;flex-direction:column;gap:5px;margin-bottom:13px;}
+.edit-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.edit-input{background:var(--card2);border:1px solid var(--border);color:var(--text);font-family:'Josefin Sans',sans-serif;font-size:14px;padding:9px 11px;outline:none;transition:border .2s;width:100%;}
+.edit-input:focus{border-color:var(--gold);}
+.edit-qty-row{display:flex;align-items:center;gap:12px;}
+.edit-qty-btn{width:34px;height:34px;background:var(--card);border:1px solid var(--border);color:var(--gold);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.edit-qty-btn:hover{border-color:var(--gold);}
+.edit-qty-val{font-size:20px;min-width:36px;text-align:center;}
+
+/* REPORTS */
+.report-modal{max-width:680px!important;max-height:88vh;overflow-y:auto;}
+.report-tabs{display:flex;gap:5px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:10px;}
+.report-tab{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2px;padding:6px 13px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+.report-tab.active{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold);}
+.report-section{display:none;}
+.report-section.active{display:block;}
+.report-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.kpi-card{background:var(--card2);border:1px solid var(--border);padding:14px 12px;text-align:center;}
+.kpi-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);font-weight:600;}
+.kpi-sub{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:1px;}
+.report-table{width:100%;border-collapse:collapse;font-size:11px;}
+.report-table th{text-align:left;padding:7px 9px;background:var(--card2);color:var(--muted);font-size:9px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.report-table td{padding:8px 9px;border-bottom:1px solid rgba(201,168,76,0.07);color:var(--text);}
+.report-table tr:hover td{background:rgba(201,168,76,0.03);}
+.report-table td.gold{color:var(--gold);}
+.report-table td.green{color:var(--green);}
+.rep-section-title{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin:14px 0 9px;}
+.bar-chart{display:flex;flex-direction:column;gap:7px;}
+.bar-row{display:flex;align-items:center;gap:9px;}
+.bar-label{font-size:10px;color:var(--muted);width:115px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:11px;background:var(--card2);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:2px;transition:width .5s ease;}
+.bar-val{font-size:10px;color:var(--gold);min-width:66px;}
+.staff-rep-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(201,168,76,0.08);}
+.staff-rep-name{font-size:13px;color:var(--text);letter-spacing:1px;}
+.staff-rep-stats{display:flex;gap:18px;}
+.staff-rep-stat{text-align:right;}
+.staff-rep-num{font-size:13px;color:var(--gold);}
+.staff-rep-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;}
+.report-period-row{display:flex;gap:7px;margin-bottom:15px;align-items:center;}
+.report-period-lbl{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.rep-period-btn{background:var(--card2);border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;padding:5px 11px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.rep-period-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.1);}
+.no-data{text-align:center;padding:28px;color:var(--muted);font-size:11px;letter-spacing:2px;}
+
+/* SALES SUMMARY */
+.summary-modal{max-width:480px!important;}
+.summary-shift-bar{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
+.sum-card{background:var(--card2);border:1px solid var(--border);padding:13px 12px;text-align:center;}
+.sum-card-lbl{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.sum-card-val{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);}
+.sum-breakdown-title{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin:12px 0 8px;}
+.sum-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(201,168,76,0.07);font-size:11px;}
+.sum-row .lbl{color:var(--muted);}
+.sum-row .val{color:var(--text);}
+.sum-row.total .lbl,.sum-row.total .val{color:var(--gold);font-size:13px;}
+
+/* NOTIF */
+.notif{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--gold-dim);color:var(--gold-light);font-size:11px;letter-spacing:2px;padding:9px 22px;text-transform:uppercase;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
+.notif.show{opacity:1;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px;}
+
+@media print{
+  body>*:not(#receiptModal){display:none!important;}
+  #receiptModal{display:block!important;position:static!important;background:white!important;}
+  .modal{border:none!important;padding:0!important;max-width:100%!important;}
+  .modal-title,.modal-btn-row{display:none!important;}
+}
+@media(max-width:768px){
+  .pos-layout{grid-template-columns:1fr;grid-template-rows:1fr 260px;}
+  .order-panel{border-top:1px solid var(--border);}
+  body{overflow:auto;}
+  .items-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-logo">Gallani <span>Hotel</span></div>
+  <div class="login-sub">Monie Point Tom Bar · POS System</div>
+  <div class="login-box">
+    <div class="login-title">Select Staff Member &amp; Enter PIN</div>
+    <div class="login-staff-grid" id="staffGrid"></div>
+    <div class="login-pin-label">Enter PIN</div>
+    <div class="login-pin-row">
+      <div class="pin-dot" id="p1">○</div>
+      <div class="pin-dot" id="p2">○</div>
+      <div class="pin-dot" id="p3">○</div>
+      <div class="pin-dot" id="p4">○</div>
+    </div>
+    <div class="login-numpad">
+      <button class="numpad-btn" onclick="pinPress('1')">1</button>
+      <button class="numpad-btn" onclick="pinPress('2')">2</button>
+      <button class="numpad-btn" onclick="pinPress('3')">3</button>
+      <button class="numpad-btn" onclick="pinPress('4')">4</button>
+      <button class="numpad-btn" onclick="pinPress('5')">5</button>
+      <button class="numpad-btn" onclick="pinPress('6')">6</button>
+      <button class="numpad-btn" onclick="pinPress('7')">7</button>
+      <button class="numpad-btn" onclick="pinPress('8')">8</button>
+      <button class="numpad-btn" onclick="pinPress('9')">9</button>
+      <button class="numpad-btn" onclick="pinClear()" style="color:var(--muted);font-size:11px;letter-spacing:1px">CLR</button>
+      <button class="numpad-btn" onclick="pinPress('0')">0</button>
+      <button class="numpad-btn" onclick="pinBackspace()" style="color:var(--muted)">⌫</button>
+    </div>
+    <button class="btn-login-go" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">Gallani <span>Hotel</span></div>
+    <div class="topbar-sub">Monie Point Tom Bar · POS</div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-time" id="clock">--:--:--</div>
+    <div class="cashier-badge">👤 <span id="cashierName">—</span></div>
+    <div class="held-badge" id="heldBadge" onclick="openHeldOrders()" style="display:none">⏸ Held: <span id="heldCount">0</span></div>
+    <button class="btn-topbar" onclick="openReports()">📊 Reports</button>
+    <button class="btn-topbar" onclick="openSalesSummary()">💰 Summary</button>
+    <button class="btn-topbar" onclick="openQR()">⬛ QR</button>
+    <button class="btn-topbar red" onclick="doLogout()">⏻ Logout</button>
+  </div>
+</div>
+
+<!-- POS LAYOUT -->
+<div class="pos-layout">
+  <div class="menu-panel">
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" placeholder="Search items…" oninput="filterItems()">
+    </div>
+    <div class="items-panel">
+      <div class="items-grid" id="itemsGrid"></div>
+    </div>
+  </div>
+
+  <div class="order-panel">
+    <div class="order-header">
+      <span class="order-title">Current Order</span>
+      <span class="order-num" id="orderNum">#0001</span>
+    </div>
+    <div class="order-meta">
+      <input class="meta-input" id="tableInput" placeholder="Table No." style="max-width:96px">
+      <input class="meta-input" id="waiterInput" placeholder="Waiter" readonly style="background:rgba(201,168,76,0.04)">
+    </div>
+    <div class="order-items" id="orderItems">
+      <div class="empty-order" id="emptyOrder">
+        <div class="empty-icon">🛒</div>
+        <div class="empty-text">No items added</div>
+      </div>
+    </div>
+    <div class="order-totals">
+      <div class="total-row"><span>Subtotal</span><span id="subtotal">₦ 0</span></div>
+      <div class="total-row"><span>VAT (7.5%)</span><span id="vatAmt">₦ 0</span></div>
+      <div class="total-row grand"><span>TOTAL</span><span id="grandTotal">₦ 0</span></div>
+    </div>
+    <div class="order-actions">
+      <div class="action-row">
+        <button class="btn-action btn-clear" onclick="clearOrder()">✕ Clear</button>
+        <button class="btn-action btn-hold" onclick="holdOrder()">⏸ Hold</button>
+        <button class="btn-action btn-new" onclick="newSale()">＋ New</button>
+      </div>
+      <button class="btn-action btn-print" onclick="openCheckout()">CHARGE &amp; PRINT RECEIPT</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qrModal" onclick="closeModal('qrModal')">
+  <div class="modal qr-modal" onclick="event.stopPropagation()">
+    <div class="modal-title">📱 Scan to View Menu</div>
+    <div id="qr-container"></div>
+    <div class="qr-label">Gallani Hotel — Monie Point Tom Bar</div>
+    <div class="qr-url" id="qrUrl"></div>
+    <div class="modal-btn-row"><button class="mbtn mbtn-cancel" onclick="closeModal('qrModal')">Close</button></div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal" onclick="closeModal('checkoutModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Complete Order</div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">SELECT PAYMENT METHOD</div>
+    <div class="pay-methods">
+      <button class="pay-btn active" id="pay-cash" onclick="selectPay('cash')">💵 Cash</button>
+      <button class="pay-btn" id="pay-pos" onclick="selectPay('pos')">💳 POS</button>
+      <button class="pay-btn" id="pay-transfer" onclick="selectPay('transfer')">📲 Transfer</button>
+    </div>
+    <div class="cash-section" id="cashSection">
+      <div class="cash-label">Amount Tendered (₦)</div>
+      <input class="cash-input" id="cashInput" type="number" placeholder="0" oninput="calcChange()">
+      <div class="change-row">
+        <span class="change-label">Change Due</span>
+        <span class="change-val" id="changeDue">₦ 0</span>
+      </div>
+    </div>
+    <div class="total-row grand" style="margin:14px 0 0"><span>TOTAL DUE</span><span id="checkoutTotal">₦ 0</span></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('checkoutModal')">Cancel</button>
+      <button class="mbtn mbtn-confirm" onclick="processPayment()">Confirm &amp; Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal-overlay" id="receiptModal" onclick="closeModal('receiptModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:380px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">🧾 Receipt</div>
+    <div id="receiptContent"></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('receiptModal')">Close</button>
+      <button class="mbtn mbtn-confirm" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELD ORDERS MODAL -->
+<div class="modal-overlay" id="heldModal" onclick="closeModal('heldModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:480px">
+    <div class="modal-title">⏸ Held Orders</div>
+    <div class="held-list" id="heldList"></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('heldModal')">Close</button>
+      <button class="mbtn mbtn-danger" onclick="clearAllHeld()">Clear All</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ITEM MODAL -->
+<div class="modal-overlay" id="editModal" onclick="closeModal('editModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:360px">
+    <div class="modal-title">✏️ Edit Item</div>
+    <div class="edit-item-name" id="editItemName"></div>
+    <div class="edit-row">
+      <div class="edit-label">Quantity</div>
+      <div class="edit-qty-row">
+        <button class="edit-qty-btn" onclick="editQtyChange(-1)">−</button>
+        <span class="edit-qty-val" id="editQtyVal">1</span>
+        <button class="edit-qty-btn" onclick="editQtyChange(1)">+</button>
+      </div>
+    </div>
+    <div class="edit-row">
+      <div class="edit-label">Price Override (₦) — leave blank for standard</div>
+      <input class="edit-input" id="editPriceInput" type="number" placeholder="Standard price">
+    </div>
+    <div class="edit-row">
+      <div class="edit-label">Item Note (optional)</div>
+      <input class="edit-input" id="editNoteInput" type="text" placeholder="e.g. No ice, Extra chilled…">
+    </div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-danger" onclick="editRemove()">Remove</button>
+      <button class="mbtn mbtn-cancel" onclick="closeModal('editModal')">Cancel</button>
+      <button class="mbtn mbtn-confirm" onclick="editSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS MODAL -->
+<div class="modal-overlay" id="reportsModal" onclick="closeModal('reportsModal')">
+  <div class="modal report-modal" onclick="event.stopPropagation()">
+    <div class="modal-title">📊 Sales Reports</div>
+    <div class="report-period-row">
+      <span class="report-period-lbl">Period:</span>
+      <button class="rep-period-btn active" onclick="setRepPeriod('today',this)">Today</button>
+      <button class="rep-period-btn" onclick="setRepPeriod('week',this)">This Week</button>
+      <button class="rep-period-btn" onclick="setRepPeriod('all',this)">All Time</button>
+    </div>
+    <div class="report-tabs">
+      <button class="report-tab active" onclick="showRepTab('overview',this)">Overview</button>
+      <button class="report-tab" onclick="showRepTab('items',this)">Top Items</button>
+      <button class="report-tab" onclick="showRepTab('staff',this)">By Staff</button>
+      <button class="report-tab" onclick="showRepTab('txns',this)">Transactions</button>
+    </div>
+    <div class="report-section active" id="rep-overview"></div>
+    <div class="report-section" id="rep-items"></div>
+    <div class="report-section" id="rep-staff"></div>
+    <div class="report-section" id="rep-txns"></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('reportsModal')">Close</button>
+      <button class="mbtn mbtn-confirm" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALES SUMMARY MODAL -->
+<div class="modal-overlay" id="summaryModal" onclick="closeModal('summaryModal')">
+  <div class="modal summary-modal" onclick="event.stopPropagation()">
+    <div class="modal-title">💰 Sales Summary</div>
+    <div id="summaryContent"></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-cancel" onclick="closeModal('summaryModal')">Close</button>
+      <button class="mbtn mbtn-confirm" onclick="window.print()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STAFF
+// ─────────────────────────────────────────────
+const STAFF = [
+  {id:'s1',name:'Amaka',  role:'Bartender', pin:'1234'},
+  {id:'s2',name:'Chidi',  role:'Bartender', pin:'2222'},
+  {id:'s3',name:'Ngozi',  role:'Waiter',    pin:'3333'},
+  {id:'s4',name:'Emeka',  role:'Supervisor',pin:'0000'},
+];
+let currentStaff=null, pinEntry='', sessionStart=new Date();
+
+function renderStaffGrid(){
+  document.getElementById('staffGrid').innerHTML=STAFF.map(s=>`
+    <div class="staff-btn" id="sb-${s.id}" onclick="selectStaff('${s.id}')">
+      <div class="staff-name">${s.name}</div>
+      <div class="staff-role">${s.role}</div>
+    </div>`).join('');
+}
+function selectStaff(id){
+  currentStaff=STAFF.find(s=>s.id===id);
+  document.querySelectorAll('.staff-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('sb-'+id).classList.add('selected');
+  pinEntry=''; updatePinDisplay();
+  document.getElementById('loginErr').textContent='';
+}
+function pinPress(d){
+  if(pinEntry.length>=4) return;
+  pinEntry+=d; updatePinDisplay();
+  if(pinEntry.length===4) setTimeout(doLogin,120);
+}
+function pinBackspace(){pinEntry=pinEntry.slice(0,-1);updatePinDisplay();}
+function pinClear(){pinEntry='';updatePinDisplay();}
+function updatePinDisplay(){
+  for(let i=1;i<=4;i++) document.getElementById('p'+i).textContent=pinEntry.length>=i?'●':'○';
+}
+function doLogin(){
+  if(!currentStaff){document.getElementById('loginErr').textContent='Please select a staff member';return;}
+  if(pinEntry!==currentStaff.pin){
+    document.getElementById('loginErr').textContent='Incorrect PIN — try again';
+    pinEntry='';updatePinDisplay();return;
+  }
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('cashierName').textContent=currentStaff.name;
+  document.getElementById('waiterInput').value=currentStaff.name;
+  sessionStart=new Date();
+  showNotif('Welcome, '+currentStaff.name+' 👋');
+}
+function doLogout(){
+  if(cart.length&&!confirm('Active order in progress. Log out anyway?')) return;
+  currentStaff=null; pinEntry='';
+  document.getElementById('loginScreen').style.display='flex';
+  updatePinDisplay();
+  document.querySelectorAll('.staff-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('loginErr').textContent='';
+  cart=[];renderCart();
+}
+
+// ─────────────────────────────────────────────
+//  MENU DATA
+// ─────────────────────────────────────────────
+const MENU=[
+  {id:1,cat:'Wine & Spirits',name:'Blue Swift',price:180000,featured:true},
+  {id:2,cat:'Wine & Spirits',name:'Belaire Rosé',price:90000,featured:true},
+  {id:3,cat:'Wine & Spirits',name:'Hennessy VS',price:90000,featured:true},
+  {id:4,cat:'Wine & Spirits',name:'Jameson Black',price:70000},
+  {id:5,cat:'Wine & Spirits',name:'Baileys',price:60000},
+  {id:6,cat:'Wine & Spirits',name:'Gila Tequila',price:50000},
+  {id:7,cat:'Wine & Spirits',name:'Olmeca',price:50000},
+  {id:8,cat:'Wine & Spirits',name:'Carlo Rossi',price:25000},
+  {id:9,cat:'Beer',name:'Heineken',price:3500,featured:true},
+  {id:10,cat:'Beer',name:'Big Stout',price:3500,featured:true},
+  {id:11,cat:'Beer',name:'Budweiser',price:3500,featured:true},
+  {id:12,cat:'Beer',name:'Trophy',price:2500},
+  {id:13,cat:'Beer',name:'Goldberg',price:2500},
+  {id:14,cat:'Beer',name:'Origin Beer',price:2500},
+  {id:15,cat:'Beer',name:'33 Export',price:2500},
+  {id:16,cat:'Beer',name:'Radler',price:2500},
+  {id:17,cat:'Beer',name:'Smirnoff Ice',price:2500},
+  {id:18,cat:'Beer',name:'Medium Stout',price:2500},
+  {id:19,cat:'Beer',name:'Desperados',price:2500},
+  {id:20,cat:'Beer',name:'Guinness Smooth',price:2500},
+  {id:21,cat:'Beer',name:'Double Black Bottle',price:2500},
+  {id:22,cat:'Beer',name:'Gulder',price:2500},
+  {id:23,cat:'Beer',name:'Legend',price:2500},
+  {id:24,cat:'Energy Drinks',name:'Power Horse',price:4000},
+  {id:25,cat:'Energy Drinks',name:'Black Bullet',price:4000},
+  {id:26,cat:'Energy Drinks',name:'Red Bull',price:4000},
+  {id:27,cat:'Energy Drinks',name:'Monster',price:4000},
+  {id:28,cat:'Energy Drinks',name:'Double Black',price:4000},
+  {id:29,cat:'Soft Drinks',name:'Hollandia Yoghurt',price:2500},
+  {id:30,cat:'Soft Drinks',name:'Active',price:2500},
+  {id:31,cat:'Soft Drinks',name:'Exotic',price:2500},
+  {id:32,cat:'Soft Drinks',name:'Can Malt',price:2000},
+  {id:33,cat:'Soft Drinks',name:'Maltina Bottle',price:1500},
+  {id:34,cat:'Soft Drinks',name:'Origin Bitter',price:2500},
+  {id:35,cat:'Soft Drinks',name:'50 Herbal Bitter',price:2500},
+  {id:36,cat:'Soft Drinks',name:'Coke',price:1000},
+  {id:37,cat:'Soft Drinks',name:'Fanta',price:1000},
+  {id:38,cat:'Soft Drinks',name:'Sprite',price:1000},
+  {id:39,cat:'Soft Drinks',name:'Fayrouz',price:1000},
+  {id:40,cat:'Soft Drinks',name:'Water',price:1000},
+  {id:41,cat:'Pool Side',name:'Grilled Cat Fish',price:12000},
+  {id:42,cat:'Pool Side',name:'Peppered Gizzard',price:6000},
+  {id:43,cat:'Pool Side',name:'Asun',price:5000},
+  {id:44,cat:'Pool Side',name:'Goatmeat Pepper Soup',price:8000},
+  {id:45,cat:'Pool Side',name:'Cowleg Pepper Soup',price:6000},
+  {id:46,cat:'Pool Side',name:'Chicken Pepper Soup',price:6000},
+];
+const CATS=['All',...new Set(MENU.map(i=>i.cat))];
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let currentCat='All', cart=[], orderCount=1, payMethod='cash';
+let qrGenerated=false, heldOrders=[], completedSales=[];
+let editingItemId=null, repPeriod='today', activeRepTab='overview';
+
+// ─────────────────────────────────────────────
+//  CLOCK
+// ─────────────────────────────────────────────
+function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+setInterval(updateClock,1000);updateClock();
+
+// ─────────────────────────────────────────────
+//  MENU RENDERING
+// ─────────────────────────────────────────────
+function renderTabs(){
+  document.getElementById('catTabs').innerHTML=CATS.map(c=>`<button class="cat-tab ${c===currentCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+}
+function setCat(c){currentCat=c;renderTabs();renderItems();}
+function renderItems(filter=''){
+  const grid=document.getElementById('itemsGrid');
+  let items=MENU.filter(i=>currentCat==='All'||i.cat===currentCat);
+  if(filter) items=items.filter(i=>i.name.toLowerCase().includes(filter.toLowerCase()));
+  if(currentCat==='All'&&!filter){
+    let html='';
+    CATS.slice(1).forEach(cat=>{
+      const ci=items.filter(i=>i.cat===cat);
+      if(!ci.length)return;
+      html+=`<div class="section-label">${cat}</div>`+ci.map(itemCard).join('');
+    });
+    grid.innerHTML=html;
+  } else {
+    grid.innerHTML=items.length?items.map(itemCard).join(''):`<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:11px;letter-spacing:2px">NO RESULTS</div>`;
+  }
+}
+function itemCard(i){
+  return `<div class="item-btn ${i.featured?'featured':''}" onclick="addToCart(${i.id})">
+    ${i.featured?'<div class="btn-badge">★</div>':''}
+    <div class="btn-category">${i.cat}</div>
+    <div class="btn-name">${i.name}</div>
+    <div class="btn-price">₦ ${fmt(i.price)}</div>
+  </div>`;
+}
+function filterItems(){renderItems(document.getElementById('searchInput').value);}
+
+// ─────────────────────────────────────────────
+//  CART
+// ─────────────────────────────────────────────
+function addToCart(id){
+  const item=MENU.find(i=>i.id===id);
+  const ex=cart.find(c=>c.id===id);
+  if(ex){ex.qty++;}else{cart.push({...item,qty:1,note:'',customPrice:null});}
+  renderCart();showNotif('+ '+item.name);
+}
+function changeQty(id,delta){
+  const idx=cart.findIndex(c=>c.id===id);
+  if(idx===-1)return;
+  cart[idx].qty+=delta;
+  if(cart[idx].qty<=0)cart.splice(idx,1);
+  renderCart();
+}
+function removeItem(id){cart=cart.filter(c=>c.id!==id);renderCart();}
+
+function renderCart(){
+  const el=document.getElementById('orderItems');
+  const empty=document.getElementById('emptyOrder');
+  if(!cart.length){empty.style.display='flex';el.innerHTML='';el.appendChild(empty);updateTotals();return;}
+  empty.style.display='none';
+  el.innerHTML=cart.map(c=>{
+    const up=c.customPrice!==null?c.customPrice:c.price;
+    return `<div class="order-item">
+      <div class="oi-info">
+        <div class="oi-name">${c.name}</div>
+        ${c.note?`<div class="oi-note">${c.note}</div>`:''}
+        ${c.customPrice!==null?`<div class="oi-note" style="color:var(--gold-dim)">Custom: ₦${fmt(c.customPrice)}/unit</div>`:''}
+      </div>
+      <div class="oi-controls">
+        <button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button>
+        <span class="qty-val">${c.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${c.id},1)">+</button>
+      </div>
+      <div class="oi-price">₦ ${fmt(up*c.qty)}</div>
+      <div class="oi-actions">
+        <button class="oi-edit" onclick="openEdit(${c.id})">Edit</button>
+        <button class="oi-remove" onclick="removeItem(${c.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateTotals();
+}
+function updateTotals(){
+  const sub=cart.reduce((s,c)=>s+(c.customPrice!==null?c.customPrice:c.price)*c.qty,0);
+  const vat=Math.round(sub*0.075);
+  const grand=sub+vat;
+  document.getElementById('subtotal').textContent='₦ '+fmt(sub);
+  document.getElementById('vatAmt').textContent='₦ '+fmt(vat);
+  document.getElementById('grandTotal').textContent='₦ '+fmt(grand);
+  document.getElementById('checkoutTotal').textContent='₦ '+fmt(grand);
+}
+function clearOrder(){
+  if(!cart.length){showNotif('Nothing to clear');return;}
+  if(!confirm('Clear all items?'))return;
+  cart=[];renderCart();showNotif('Order cleared');
+}
+
+// ─────────────────────────────────────────────
+//  EDIT ITEM
+// ─────────────────────────────────────────────
+function openEdit(id){
+  editingItemId=id;
+  const c=cart.find(x=>x.id===id);
+  document.getElementById('editItemName').textContent=c.name;
+  document.getElementById('editQtyVal').textContent=c.qty;
+  document.getElementById('editPriceInput').value=c.customPrice!==null?c.customPrice:'';
+  document.getElementById('editNoteInput').value=c.note||'';
+  openModal('editModal');
+}
+function editQtyChange(delta){
+  const el=document.getElementById('editQtyVal');
+  el.textContent=Math.max(1,parseInt(el.textContent)+delta);
+}
+function editSave(){
+  const c=cart.find(x=>x.id===editingItemId);
+  if(!c){closeModal('editModal');return;}
+  c.qty=parseInt(document.getElementById('editQtyVal').textContent)||1;
+  const pv=document.getElementById('editPriceInput').value;
+  c.customPrice=pv!==''?parseFloat(pv):null;
+  c.note=document.getElementById('editNoteInput').value.trim();
+  closeModal('editModal');renderCart();showNotif('Item updated');
+}
+function editRemove(){removeItem(editingItemId);closeModal('editModal');showNotif('Item removed');}
+
+// ─────────────────────────────────────────────
+//  HOLD / NEW SALE
+// ─────────────────────────────────────────────
+function holdOrder(){
+  if(!cart.length){showNotif('Nothing to hold');return;}
+  heldOrders.push({
+    orderNum:pad(orderCount),
+    table:document.getElementById('tableInput').value||'—',
+    waiter:currentStaff?currentStaff.name:'—',
+    cart:JSON.parse(JSON.stringify(cart)),
+    heldAt:new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'})
+  });
+  showNotif('Order #'+pad(orderCount)+' held');
+  newSale();updateHeldBadge();
+}
+function updateHeldBadge(){
+  const b=document.getElementById('heldBadge');
+  b.style.display=heldOrders.length?'flex':'none';
+  document.getElementById('heldCount').textContent=heldOrders.length;
+}
+function newSale(){
+  cart=[];orderCount++;
+  document.getElementById('orderNum').textContent='#'+pad(orderCount);
+  document.getElementById('tableInput').value='';
+  if(currentStaff)document.getElementById('waiterInput').value=currentStaff.name;
+  renderCart();showNotif('New sale — #'+pad(orderCount));
+}
+function openHeldOrders(){
+  const list=document.getElementById('heldList');
+  if(!heldOrders.length){list.innerHTML='<div class="held-empty">No held orders</div>';}
+  else{
+    list.innerHTML=heldOrders.map((h,i)=>{
+      const sub=h.cart.reduce((s,c)=>s+(c.customPrice!==null?c.customPrice:c.price)*c.qty,0);
+      const grand=sub+Math.round(sub*0.075);
+      return `<div class="held-item">
+        <div class="held-item-info">
+          <div class="held-item-num">#${h.orderNum}</div>
+          <div class="held-item-meta">Table ${h.table} · ${h.waiter} · ${h.heldAt}</div>
+          <div class="held-item-meta">${h.cart.map(c=>c.name+(c.qty>1?' x'+c.qty:'')).join(', ')}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <div style="font-size:13px;color:var(--gold-light)">₦ ${fmt(grand)}</div>
+          <div class="held-item-actions">
+            <button class="held-action" onclick="recallOrder(${i})">Recall</button>
+            <button class="held-action del" onclick="deleteHeld(${i})">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  openModal('heldModal');
+}
+function recallOrder(i){
+  const h=heldOrders[i];
+  if(cart.length&&!confirm('Replace current order with held #'+h.orderNum+'?'))return;
+  cart=JSON.parse(JSON.stringify(h.cart));
+  orderCount=parseInt(h.orderNum);
+  document.getElementById('orderNum').textContent='#'+h.orderNum;
+  document.getElementById('tableInput').value=h.table==='—'?'':h.table;
+  heldOrders.splice(i,1);updateHeldBadge();renderCart();closeModal('heldModal');
+  showNotif('Order #'+h.orderNum+' recalled');
+}
+function deleteHeld(i){
+  const n=heldOrders[i].orderNum;heldOrders.splice(i,1);updateHeldBadge();openHeldOrders();
+  showNotif('Held #'+n+' deleted');
+}
+function clearAllHeld(){
+  if(!heldOrders.length)return;
+  if(!confirm('Delete all '+heldOrders.length+' held order(s)?'))return;
+  heldOrders=[];updateHeldBadge();closeModal('heldModal');
+}
+
+// ─────────────────────────────────────────────
+//  CHECKOUT
+// ─────────────────────────────────────────────
+function openCheckout(){
+  if(!cart.length){showNotif('Add items first');return;}
+  selectPay('cash');
+  document.getElementById('cashInput').value='';
+  document.getElementById('changeDue').textContent='₦ 0';
+  document.getElementById('changeDue').className='change-val';
+  openModal('checkoutModal');
+}
+function selectPay(m){
+  payMethod=m;
+  ['cash','pos','transfer'].forEach(p=>document.getElementById('pay-'+p).classList.toggle('active',p===m));
+  document.getElementById('cashSection').style.display=(m==='cash')?'block':'none';
+}
+function calcChange(){
+  const sub=cart.reduce((s,c)=>s+(c.customPrice!==null?c.customPrice:c.price)*c.qty,0);
+  const grand=sub+Math.round(sub*0.075);
+  const tendered=parseFloat(document.getElementById('cashInput').value)||0;
+  const change=tendered-grand;
+  const el=document.getElementById('changeDue');
+  el.textContent='₦ '+fmt(Math.abs(change));
+  el.className='change-val'+(change<0?' negative':'');
+}
+function processPayment(){
+  const sub=cart.reduce((s,c)=>s+(c.customPrice!==null?c.customPrice:c.price)*c.qty,0);
+  const vat=Math.round(sub*0.075);
+  const grand=sub+vat;
+  if(payMethod==='cash'){
+    const t=parseFloat(document.getElementById('cashInput').value)||0;
+    if(t<grand){showNotif('Insufficient cash amount');return;}
+  }
+  const tendered=payMethod==='cash'?parseFloat(document.getElementById('cashInput').value):grand;
+  completedSales.push({
+    orderNum:pad(orderCount),
+    table:document.getElementById('tableInput').value||'—',
+    staff:currentStaff?currentStaff.name:'—',
+    staffId:currentStaff?currentStaff.id:'?',
+    items:JSON.parse(JSON.stringify(cart)),
+    sub,vat,grand,payMethod,tendered,
+    change:payMethod==='cash'?tendered-grand:0,
+    at:new Date()
+  });
+  closeModal('checkoutModal');
+  showReceiptModal();
+}
+
+// ─────────────────────────────────────────────
+//  RECEIPT
+// ─────────────────────────────────────────────
+function showReceiptModal(){
+  const s=completedSales[completedSales.length-1];
+  const dateStr=s.at.toLocaleDateString('en-NG');
+  const timeStr=s.at.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
+  const items=s.items.map(c=>{
+    const up=c.customPrice!==null?c.customPrice:c.price;
+    return `<div class="receipt-item">
+      <span class="receipt-item-name">${c.name}${c.note?` (${c.note})`:''}</span>
+      <span class="receipt-item-qty">x${c.qty}</span>
+      <span class="receipt-item-price">₦${fmt(up*c.qty)}</span>
+    </div>`;
+  }).join('');
+  const cashRows=s.payMethod==='cash'?`
+    <div class="receipt-total-row"><span>Cash Tendered</span><span>₦${fmt(s.tendered)}</span></div>
+    <div class="receipt-total-row"><span>Change</span><span>₦${fmt(s.change)}</span></div>`:'';
+
+  document.getElementById('receiptContent').innerHTML=`
+    <div class="receipt" id="printable">
+      <div class="receipt-hotel">GALLANI HOTEL</div>
+      <div class="receipt-sub">Monie Point Tom Bar</div>
+      <div class="receipt-phone">Tel: +234 553 623 1754</div>
+      <hr class="receipt-divider">
+      <div class="receipt-meta"><span>Order: #${s.orderNum}</span><span>${dateStr} ${timeStr}</span></div>
+      <div class="receipt-meta"><span>Table: ${s.table}</span><span>Cashier: ${s.staff}</span></div>
+      <div class="receipt-meta"><span>Payment: ${s.payMethod.toUpperCase()}</span></div>
+      <hr class="receipt-divider">
+      <div class="receipt-item" style="font-weight:700;font-size:10px;color:#555">
+        <span class="receipt-item-name">ITEM</span><span class="receipt-item-qty">QTY</span><span class="receipt-item-price">AMOUNT</span>
+      </div>
+      <hr class="receipt-divider">
+      ${items}
+      <hr class="receipt-divider">
+      <div class="receipt-total-row"><span>Subtotal</span><span>₦${fmt(s.sub)}</span></div>
+      <div class="receipt-total-row"><span>VAT (7.5%)</span><span>₦${fmt(s.vat)}</span></div>
+      <hr class="receipt-divider">
+      <div class="receipt-total-row receipt-grand"><span>TOTAL</span><span>₦${fmt(s.grand)}</span></div>
+      ${cashRows}
+      <hr class="receipt-divider">
+      <div class="receipt-qr"><div class="receipt-qr-label">Scan for digital menu</div><div id="receiptQR"></div></div>
+      <div class="receipt-thanks">Thank you for visiting Gallani Hotel!<br>Please come again 🙏</div>
+    </div>`;
+  openModal('receiptModal');
+  setTimeout(()=>{
+    const url=window.location.href.replace('gallani_pos','gallani_beverage_menu');
+    const qrEl=document.getElementById('receiptQR');
+    if(qrEl) new QRCode(qrEl,{text:url,width:80,height:80,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  },150);
+  const num=orderCount; orderCount++; cart=[];
+  document.getElementById('tableInput').value='';
+  if(currentStaff) document.getElementById('waiterInput').value=currentStaff.name;
+  document.getElementById('orderNum').textContent='#'+pad(orderCount);
+  renderCart();
+  showNotif('Order #'+pad(num)+' complete ✓');
+}
+
+// ─────────────────────────────────────────────
+//  SALES SUMMARY
+// ─────────────────────────────────────────────
+function openSalesSummary(){
+  const sales=completedSales;
+  const totalRev=sales.reduce((s,o)=>s+o.grand,0);
+  const totalVAT=sales.reduce((s,o)=>s+o.vat,0);
+  const avgOrder=sales.length?Math.round(totalRev/sales.length):0;
+  const byCash=sales.filter(o=>o.payMethod==='cash').reduce((s,o)=>s+o.grand,0);
+  const byPOS=sales.filter(o=>o.payMethod==='pos').reduce((s,o)=>s+o.grand,0);
+  const byTrans=sales.filter(o=>o.payMethod==='transfer').reduce((s,o)=>s+o.grand,0);
+  const totalChange=sales.reduce((s,o)=>s+o.change,0);
+  const now=new Date();
+  document.getElementById('summaryContent').innerHTML=`
+    <div class="summary-shift-bar">
+      Session: ${sessionStart.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'})} – ${now.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'})}
+      &nbsp;·&nbsp; Cashier: ${currentStaff?currentStaff.name:'—'}
+      &nbsp;·&nbsp; ${now.toLocaleDateString('en-NG')}
+    </div>
+    <div class="sum-grid">
+      <div class="sum-card"><div class="sum-card-lbl">Total Revenue</div><div class="sum-card-val">₦ ${fmt(totalRev)}</div></div>
+      <div class="sum-card"><div class="sum-card-lbl">Orders Completed</div><div class="sum-card-val">${sales.length}</div></div>
+      <div class="sum-card"><div class="sum-card-lbl">VAT Collected</div><div class="sum-card-val">₦ ${fmt(totalVAT)}</div></div>
+      <div class="sum-card"><div class="sum-card-lbl">Avg Order Value</div><div class="sum-card-val">₦ ${fmt(avgOrder)}</div></div>
+    </div>
+    <div class="sum-breakdown-title">Payment Breakdown</div>
+    <div class="sum-row"><span class="lbl">💵 Cash Sales</span><span class="val">₦ ${fmt(byCash)} (${sales.filter(o=>o.payMethod==='cash').length} orders)</span></div>
+    <div class="sum-row"><span class="lbl">💳 POS Sales</span><span class="val">₦ ${fmt(byPOS)} (${sales.filter(o=>o.payMethod==='pos').length} orders)</span></div>
+    <div class="sum-row"><span class="lbl">📲 Transfer Sales</span><span class="val">₦ ${fmt(byTrans)} (${sales.filter(o=>o.payMethod==='transfer').length} orders)</span></div>
+    <div class="sum-row"><span class="lbl">💸 Total Change Given</span><span class="val">₦ ${fmt(totalChange)}</span></div>
+    <div class="sum-row total"><span class="lbl">GRAND TOTAL</span><span class="val">₦ ${fmt(totalRev)}</span></div>
+    ${!sales.length?'<div class="no-data" style="margin-top:12px">No completed sales in this session yet</div>':''}
+  `;
+  openModal('summaryModal');
+}
+
+// ─────────────────────────────────────────────
+//  REPORTS
+// ─────────────────────────────────────────────
+function setRepPeriod(p,btn){
+  repPeriod=p;
+  document.querySelectorAll('.rep-period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRepTab(activeRepTab);
+}
+function showRepTab(tab,btn){
+  activeRepTab=tab;
+  document.querySelectorAll('.report-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.report-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('rep-'+tab).classList.add('active');
+  renderRepTab(tab);
+}
+function getRepSales(){
+  const now=new Date();
+  return completedSales.filter(s=>{
+    if(repPeriod==='all')return true;
+    if(repPeriod==='today')return s.at.toDateString()===now.toDateString();
+    if(repPeriod==='week')return(now-s.at)<7*24*60*60*1000;
+    return true;
+  });
+}
+function renderRepTab(tab){
+  const sales=getRepSales();
+  const el=document.getElementById('rep-'+tab);
+  if(!sales.length){el.innerHTML='<div class="no-data">No sales data for this period</div>';return;}
+  if(tab==='overview'){
+    const rev=sales.reduce((s,o)=>s+o.grand,0);
+    const vat=sales.reduce((s,o)=>s+o.vat,0);
+    const avg=Math.round(rev/sales.length);
+    const byCash=sales.filter(o=>o.payMethod==='cash').reduce((s,o)=>s+o.grand,0);
+    const byPOS=sales.filter(o=>o.payMethod==='pos').reduce((s,o)=>s+o.grand,0);
+    const byTrans=sales.filter(o=>o.payMethod==='transfer').reduce((s,o)=>s+o.grand,0);
+    el.innerHTML=`
+      <div class="report-kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-val">₦${fmtK(rev)}</div><div class="kpi-sub">${sales.length} orders</div></div>
+        <div class="kpi-card"><div class="kpi-label">Avg Order</div><div class="kpi-val">₦${fmtK(avg)}</div><div class="kpi-sub">per transaction</div></div>
+        <div class="kpi-card"><div class="kpi-label">VAT</div><div class="kpi-val">₦${fmtK(vat)}</div><div class="kpi-sub">collected</div></div>
+      </div>
+      <div class="rep-section-title">Payment Split</div>
+      <div class="bar-chart">
+        ${barRow('💵 Cash',byCash,rev)}
+        ${barRow('💳 POS',byPOS,rev)}
+        ${barRow('📲 Transfer',byTrans,rev)}
+      </div>`;
+  }
+  if(tab==='items'){
+    const map={};
+    sales.forEach(s=>s.items.forEach(i=>{
+      if(!map[i.name])map[i.name]={name:i.name,qty:0,rev:0};
+      map[i.name].qty+=i.qty;
+      map[i.name].rev+=(i.customPrice!==null?i.customPrice:i.price)*i.qty;
+    }));
+    const sorted=Object.values(map).sort((a,b)=>b.rev-a.rev);
+    const maxR=sorted[0]?.rev||1;
+    el.innerHTML=`
+      <div class="rep-section-title">Top Items by Revenue</div>
+      <div class="bar-chart">${sorted.slice(0,10).map(i=>barRow(i.name,i.rev,maxR,i.qty+' sold')).join('')}</div>
+      <div class="rep-section-title" style="margin-top:18px">Full Breakdown</div>
+      <table class="report-table"><thead><tr><th>Item</th><th>Qty</th><th>Revenue</th></tr></thead>
+      <tbody>${sorted.map(i=>`<tr><td>${i.name}</td><td class="gold">${i.qty}</td><td class="green">₦ ${fmt(i.rev)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  if(tab==='staff'){
+    const map={};
+    sales.forEach(s=>{
+      if(!map[s.staff])map[s.staff]={name:s.staff,orders:0,rev:0};
+      map[s.staff].orders++;map[s.staff].rev+=s.grand;
+    });
+    const sorted=Object.values(map).sort((a,b)=>b.rev-a.rev);
+    el.innerHTML=`<div class="rep-section-title">Performance by Staff</div>`+
+      sorted.map(s=>`<div class="staff-rep-row">
+        <div class="staff-rep-name">👤 ${s.name}</div>
+        <div class="staff-rep-stats">
+          <div class="staff-rep-stat"><div class="staff-rep-num">${s.orders}</div><div class="staff-rep-lbl">Orders</div></div>
+          <div class="staff-rep-stat"><div class="staff-rep-num">₦ ${fmtK(s.rev)}</div><div class="staff-rep-lbl">Revenue</div></div>
+          <div class="staff-rep-stat"><div class="staff-rep-num">₦ ${fmtK(Math.round(s.rev/s.orders))}</div><div class="staff-rep-lbl">Avg</div></div>
+        </div>
+      </div>`).join('');
+  }
+  if(tab==='txns'){
+    const sorted=[...sales].sort((a,b)=>b.at-a.at);
+    el.innerHTML=`<table class="report-table">
+      <thead><tr><th>Order</th><th>Time</th><th>Table</th><th>Cashier</th><th>Pay</th><th>Total</th></tr></thead>
+      <tbody>${sorted.map(s=>`<tr>
+        <td class="gold">#${s.orderNum}</td>
+        <td>${s.at.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'})}</td>
+        <td>${s.table}</td><td>${s.staff}</td>
+        <td style="text-transform:uppercase;font-size:10px">${s.payMethod}</td>
+        <td class="green">₦ ${fmt(s.grand)}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+}
+function barRow(label,val,max,sub=''){
+  const pct=max>0?Math.round(val/max*100):0;
+  return `<div class="bar-row">
+    <div class="bar-label">${label}</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    <div class="bar-val">₦${fmtK(val)}${sub?`<span style="font-size:9px;color:var(--muted);margin-left:4px">${sub}</span>`:''}</div>
+  </div>`;
+}
+function fmtK(n){return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':fmt(n);}
+function openReports(){
+  activeRepTab='overview';
+  document.querySelectorAll('.report-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.report-section').forEach((s,i)=>s.classList.toggle('active',i===0));
+  renderRepTab('overview');
+  openModal('reportsModal');
+}
+
+// ─────────────────────────────────────────────
+//  QR
+// ─────────────────────────────────────────────
+function openQR(){
+  openModal('qrModal');
+  if(!qrGenerated){
+    const url=window.location.href.replace('gallani_pos','gallani_beverage_menu');
+    document.getElementById('qrUrl').textContent=url;
+    new QRCode(document.getElementById('qr-container'),{text:url,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+    qrGenerated=true;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function fmt(n){return Number(n).toLocaleString('en-NG');}
+function pad(n){return String(n).padStart(4,'0');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function showNotif(msg){
+  const el=document.getElementById('notif');
+  el.textContent=msg;el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1800);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){['checkoutModal','receiptModal','qrModal','heldModal','editModal','reportsModal','summaryModal'].forEach(closeModal);}
+  if(e.key==='F1'){e.preventDefault();openCheckout();}
+  if(e.key==='F2'){e.preventDefault();holdOrder();}
+  if(e.key==='F3'){e.preventDefault();newSale();}
+  if(e.key==='F4'){e.preventDefault();openHeldOrders();}
+  if(e.key==='F5'){e.preventDefault();openReports();}
+  if(e.key==='F6'){e.preventDefault();openSalesSummary();}
+});
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+renderStaffGrid();
+renderTabs();
+renderItems();
+updateTotals();
+</script>
+</body>
+</html>
